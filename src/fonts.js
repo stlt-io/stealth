@@ -3573,6 +3573,8 @@ const fonts = () => {
       const span = document.createElement('span')
       span.style.fontSize = '128px'
       span.style.position = 'fixed'
+      span.style.left = '-9999px'
+      span.style.visibility = 'hidden'
       span.style.zIndex = '-1'
       span.innerHTML = '😀☺♨...☯☑✴'
 
@@ -3587,6 +3589,8 @@ const fonts = () => {
             span.getBoundingClientRect().height
         )
       })
+
+      document.body.removeChild(span)
 
       const unique = [...new Set(results)]
 

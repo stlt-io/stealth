@@ -13,7 +13,8 @@ import mathDetails from './src/math.js'
 import fonts from './src/fonts.js'
 
 export default async function stealth() {
-  return await Promise.all([
+  let start = window.performance.now()
+  return Promise.all([
     { canvas: await canvas() },
     { device: device() },
     {
@@ -53,6 +54,7 @@ export default async function stealth() {
         .update(JSON.stringify(local))
         .getHash('HEX'),
       local,
+      ms: parseInt(window.performance.now() - start),
       remote: {}
     }
   })

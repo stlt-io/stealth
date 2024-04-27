@@ -3567,30 +3567,20 @@ const fontList = [
   'ＭＳ Ｐ明朝'
 ]
 
-const fonts = () => {
-  return new Promise((resolve, reject) => {
+const fonts = async () => {
+  return new Promise(async (resolve, reject) => {
     try {
-      const span = document.createElement('span')
-      span.style.fontSize = '128px'
-      span.style.position = 'fixed'
-      span.style.left = '-9999px'
-      span.style.visibility = 'hidden'
-      span.style.zIndex = '-1'
-      span.innerHTML = '😀☺♨...☯☑✴'
+      const results = await Promise.all(
+        fontList.map(async (font) => {
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d')
+          ctx.font = `16px ${font}`
 
-      document.body.appendChild(span)
-
-      const results = []
-      fontList.forEach((font) => {
-        span.style.fontFamily = font
-        results.push(
-          span.getBoundingClientRect().width +
-            '_' +
-            span.getBoundingClientRect().height
-        )
-      })
-
-      document.body.removeChild(span)
+          return document.fonts.ready.then(() => {
+            return ctx.measureText('😀☺♨...☑✴🅰').width
+          })
+        })
+      )
 
       const unique = [...new Set(results)]
 

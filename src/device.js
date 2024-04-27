@@ -11,8 +11,7 @@ const device = () => {
     mobile: navigator?.userAgentData?.mobile || 'unknown',
     vendor: navigator?.userAgentData?.vendor || 'unknown',
     architecture: getArchitecture(),
-    videoCard: getVideoCard(),
-    jsHeapSizeLimit: memoryInfo.jsHeapSizeLimit || 0
+    videoCard: getVideoCard()
   }
 }
 

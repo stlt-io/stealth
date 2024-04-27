@@ -3,7 +3,6 @@ const intl = () => {
     try {
       resolve({
         language: navigator.language,
-        languages: navigator.languages,
         numberFormat: new Intl.NumberFormat(undefined, {
           notation: 'compact',
           compactDisplay: 'long'

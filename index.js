@@ -1,4 +1,4 @@
-// import axios from 'axios'
+import axios from 'axios'
 import jsSHA from 'jssha'
 
 import canvas from './src/canvas.js'
@@ -12,7 +12,7 @@ import webgl from './src/webgl.js'
 import mathDetails from './src/math.js'
 import fonts from './src/fonts.js'
 
-export default async function stealth() {
+export default async function stealth({ apiKey }) {
   let start = window.performance.now()
   return Promise.all([
     { canvas: await canvas() },
@@ -49,13 +49,47 @@ export default async function stealth() {
       return acc
     }, {})
 
-    return {
-      id: new jsSHA('SHA-256', 'TEXT', { encoding: 'UTF8' })
-        .update(JSON.stringify(local))
-        .getHash('HEX'),
-      local,
-      ms: parseInt(window.performance.now() - start),
-      remote: {}
+    const payload = {
+      local: {
+        ...local,
+        hash: new jsSHA('SHA-256', 'TEXT', { encoding: 'UTF8' })
+          .update(JSON.stringify(local))
+          .getHash('HEX')
+      }
+    }
+
+    // If apiKey is provided, send the payload to the server (more accurate results)
+    // Want an API_KEY? Contact us at hello@stlt.io
+    if (apiKey) {
+      const axiosInstance = axios.create()
+      axiosInstance.defaults.withCredentials = true
+      axiosInstance.defaults.headers.common['x-api-key'] = apiKey
+      return axiosInstance
+        .get(`https://api.stlt.io/${payload.local.hash}`)
+        .then((response) => {
+          return {
+            visitorId: response.data.visitorId,
+            local: payload.local,
+            ms: parseInt(window.performance.now() - start),
+            remote: response.data
+          }
+        })
+        .catch((error) => {
+          console.log(error.message)
+          return {
+            visitorId: payload.local.hash,
+            local: payload.local,
+            ms: parseInt(window.performance.now() - start),
+            remote: {}
+          }
+        })
+    } else {
+      return {
+        visitorId: payload.local.hash,
+        local: payload.local,
+        ms: parseInt(window.performance.now() - start),
+        remote: {}
+      }
     }
   })
 }

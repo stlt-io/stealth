@@ -12,7 +12,7 @@ const result = await stealth()
 const {
   local: {},
   remote: {},
-  id: 'abc...xyz',
+  visitorId: 'abc...xyz',
   ms: 491
 } = result
 ```
@@ -22,7 +22,7 @@ const {
 ```
 import stealth from '@stltio/stealth'
 
-const [data, setData] = useState({ local: {}, remote: {}, id: '', ms: 0 })
+const [data, setData] = useState({ local: {}, remote: {}, visitorId: '', ms: 0 })
 
 useEffect(() => {
   const init = async () => {

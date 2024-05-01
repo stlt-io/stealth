@@ -1,14 +1,8 @@
 const device = () => {
   return new Promise((resolve) => {
     try {
-      const jsHeapSizeLimit =
-        window.performance && window.performance.memory
-          ? window.performance.memory.jsHeapSizeLimit
-          : 0
-
       resolve({
         device: {
-          jsHeapSizeLimit,
           hardwareConcurrency: navigator.hardwareConcurrency,
           memory: navigator.deviceMemory,
           platform: navigator?.userAgentData?.platform || 'unknown',

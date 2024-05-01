@@ -1,14 +1,16 @@
 const screenDetails = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     try {
       resolve({
-        isTouchscreen: navigator.maxTouchPoints > 0,
-        maxTouchPoints: navigator.maxTouchPoints,
-        colorDepth: screen.colorDepth,
-        mediaMatches: matchMedias()
+        screen: {
+          isTouchscreen: navigator.maxTouchPoints > 0,
+          maxTouchPoints: navigator.maxTouchPoints,
+          colorDepth: screen.colorDepth,
+          mediaMatches: matchMedias()
+        }
       })
     } catch (error) {
-      reject(error)
+      resolve({ screen: null })
     }
   })
 }

@@ -1,9 +1,8 @@
 import hash from './hash.js'
 
 const audio = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     try {
-      // Set up audio parameters
       const sampleRate = 44100
       const numSamples = 5000
       const audioContext = new (window.OfflineAudioContext ||
@@ -26,17 +25,18 @@ const audio = () => {
       audioContext.oncomplete = (event) => {
         samples = event.renderedBuffer.getChannelData(0)
         resolve({
-          sampleHash: hash(samples.join(',')),
-          oscillator: oscillator.type,
-          maxChannels: audioContext.destination.maxChannelCount,
-          channelCountMode: audioBuffer.channelCountMode
+          audio: {
+            sampleHash: hash(samples.join(',')),
+            oscillator: oscillator.type,
+            maxChannels: audioContext.destination.maxChannelCount,
+            channelCountMode: audioBuffer.channelCountMode
+          }
         })
       }
 
       audioContext.startRendering()
     } catch (error) {
-      console.error('Error creating audio fingerprint:', error)
-      reject(error)
+      resolve({ audio: null })
     }
   })
 }

@@ -1,18 +1,27 @@
 const device = () => {
-  const memoryInfo =
-    window.performance && window.performance.memory
-      ? window.performance.memory
-      : 0
+  return new Promise((resolve) => {
+    try {
+      const jsHeapSizeLimit =
+        window.performance && window.performance.memory
+          ? window.performance.memory.jsHeapSizeLimit
+          : 0
 
-  return {
-    hardwareConcurrency: navigator.hardwareConcurrency,
-    memory: navigator.deviceMemory,
-    platform: navigator?.userAgentData?.platform || 'unknown',
-    mobile: navigator?.userAgentData?.mobile || 'unknown',
-    vendor: navigator?.userAgentData?.vendor || 'unknown',
-    architecture: getArchitecture(),
-    videoCard: getVideoCard()
-  }
+      resolve({
+        device: {
+          jsHeapSizeLimit,
+          hardwareConcurrency: navigator.hardwareConcurrency,
+          memory: navigator.deviceMemory,
+          platform: navigator?.userAgentData?.platform || 'unknown',
+          mobile: navigator?.userAgentData?.mobile || 'unknown',
+          vendor: navigator?.userAgentData?.vendor || 'unknown',
+          architecture: getArchitecture(),
+          videoCard: getVideoCard()
+        }
+      })
+    } catch {
+      resolve({ device: null })
+    }
+  })
 }
 
 const getVideoCard = () => {

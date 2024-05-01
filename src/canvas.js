@@ -1,7 +1,7 @@
 import hash from './hash.js'
 
 const canvas = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     try {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
@@ -16,9 +16,9 @@ const canvas = () => {
       ctx.fillText('😀☺♨...☑✴🅰', 50.0, 70.0)
       ctx.stroke()
 
-      resolve(hash(canvas.toDataURL()))
+      resolve({ canvas: hash(canvas.toDataURL()) })
     } catch (error) {
-      reject(error)
+      resolve({ canvas: null })
     }
   })
 }

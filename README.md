@@ -4,6 +4,8 @@ Device fingerprinting
 
 (work in progress)
 
+See the working [demo](https://stlt.io) in action.
+
 ## How to use
 
 ```
@@ -31,4 +33,23 @@ useEffect(() => {
   }
   init()
 }, [])
+```
+
+## ApiKey
+
+If `apiKey` is provided, send the payload to the server (more accurate results).
+Want an API_KEY? Contact us at [hello@stlt.io](mailto:hello@stlt.io).
+
+### Example with API_KEY
+
+```
+import stealth from '@stltio/stealth'
+const result = await stealth({ apiKey: 'aaa...bbb'})
+const {
+  local: {},
+  remote: {},
+  visitorId: 'abc...xyz',
+  ms: 491
+} = result
+
 ```

@@ -1,20 +1,22 @@
 const browser = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     try {
       resolve({
-        userAgent: navigator.userAgent,
-        cookieEnabled: navigator.cookieEnabled,
-        onLine: navigator.onLine,
-        oscpu: navigator.oscpu,
-        userAgentData: navigator.userAgentData,
-        webdriver: navigator.webdriver,
-        doNotTrack: navigator.doNotTrack,
-        pdfViewerEnabled: navigator.pdfViewerEnabled,
-        applePayVersion: getApplePayVersion(),
-        ...getBrowser()
+        browser: {
+          userAgent: navigator.userAgent,
+          cookieEnabled: navigator.cookieEnabled,
+          onLine: navigator.onLine,
+          oscpu: navigator.oscpu,
+          userAgentData: navigator.userAgentData,
+          webdriver: navigator.webdriver,
+          doNotTrack: navigator.doNotTrack,
+          pdfViewerEnabled: navigator.pdfViewerEnabled,
+          applePayVersion: getApplePayVersion(),
+          ...getBrowser()
+        }
       })
     } catch (error) {
-      reject(error)
+      resolve({ browser: null })
     }
   })
 }

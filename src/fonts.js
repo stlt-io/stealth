@@ -3568,7 +3568,7 @@ const fontList = [
 ]
 
 const fonts = async () => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve) => {
     try {
       const results = await Promise.all(
         fontList.map(async (font) => {
@@ -3583,13 +3583,14 @@ const fonts = async () => {
       )
 
       const unique = [...new Set(results)]
-
       resolve({
-        unique: unique.length,
-        hash: hash(unique.join('|'))
+        fonts: {
+          unique: unique.length,
+          hash: hash(unique.join('|'))
+        }
       })
     } catch (error) {
-      reject(error)
+      resolve({ fonts: null })
     }
   })
 }

@@ -47,14 +47,14 @@ jobs:
         run: npm install -g npm-check-updates
       - name: Update dependencies
         run: ncu -u
-      - name: Install Dependencies
-        run: npm install
       - name: Git config email
         run: git config --global user.email "github@stlt.io"
       - name: Git config name
         run: git config --global user.name "GitHub Actions"
+      - name: Git config advice
+        run: git config advice.addIgnoredFile false
       - name: Git add changes
-        run: git add *
+        run: git add package.json
       - name: Commit changes
         run: 'git commit -m "chore: update dependencies"'
       - name: Push changes

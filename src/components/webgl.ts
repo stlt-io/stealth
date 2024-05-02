@@ -1,4 +1,4 @@
-import hash from './hash.js'
+import hash from '../utils/hash'
 
 const webgl = async () => {
   return new Promise((resolve) => {
@@ -8,11 +8,11 @@ const webgl = async () => {
       const height = 128
 
       const ctx =
-        canvas.getContext('webgl2') ||
-        canvas.getContext('experimental-webgl2') ||
-        canvas.getContext('webgl') ||
-        canvas.getContext('experimental-webgl') ||
-        canvas.getContext('moz-webgl')
+        (canvas.getContext('webgl2') as any) ||
+        (canvas.getContext('experimental-webgl2') as any) ||
+        (canvas.getContext('webgl') as any) ||
+        canvas.getContext('experimental-webgl' as any) ||
+        (canvas.getContext('moz-webgl') as any)
 
       var f =
         'attribute vec2 attrVertex;varying vec2 varyinTexCoordinate;uniform vec2 uniformOffset;void main(){varyinTexCoordinate=attrVertex+uniformOffset;gl_Position=vec4(attrVertex,0,1);}'

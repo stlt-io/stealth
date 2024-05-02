@@ -1,10 +1,10 @@
-import hash from './hash.js'
+import hash from '../utils/hash'
 
 const canvas = () => {
   return new Promise((resolve) => {
     try {
       const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
+      const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
 
       ctx.beginPath()
       ctx.rect(0, 0, 16, 16)

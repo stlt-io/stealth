@@ -25,37 +25,41 @@ jobs:
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
       - name: Set NPM version
         run: npm version ${{ steps.tag.outputs.tag }}
+      - name: Set config
+        run: cp src/config.prod.ts src/config.ts
+      - name: Build
+        run: npm run build
       - name: Publish
         run: npm publish --access public
 
-  update-website:
-    runs-on: ubuntu-latest
-    needs: publish
-    steps:
-      - name: Sleep for 60 seconds
-        run: sleep 60s
-        shell: bash
-      - uses: actions/checkout@v3
-        with:
-          repository: "stlt-io/website"
-          ref: "main"
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "21"
-      - name: Update ncu
-        run: npm install -g npm-check-updates
-      - name: Update dependencies
-        run: ncu -u
-      - name: Git config email
-        run: git config --global user.email "github@stlt.io"
-      - name: Git config name
-        run: git config --global user.name "GitHub Actions"
-      - name: Git config advice
-        run: git config advice.addIgnoredFile false
-      - name: Git add changes
-        run: git add package.json
-      - name: Commit changes
-        run: 'git commit -m "chore: update dependencies"'
-      - name: Push changes
-        run: git push origin main
+  # update-website:
+  #   runs-on: ubuntu-latest
+  #   needs: publish
+  #   steps:
+  #     - name: Sleep for 60 seconds
+  #       run: sleep 60s
+  #       shell: bash
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         repository: "stlt-io/website"
+  #         ref: "main"
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "21"
+  #     - name: Update ncu
+  #       run: npm install -g npm-check-updates
+  #     - name: Update dependencies
+  #       run: ncu -u
+  #     - name: Git config email
+  #       run: git config --global user.email "github@stlt.io"
+  #     - name: Git config name
+  #       run: git config --global user.name "GitHub Actions"
+  #     - name: Git config advice
+  #       run: git config advice.addIgnoredFile false
+  #     - name: Git add changes
+  #       run: git add package.json
+  #     - name: Commit changes
+  #       run: 'git commit -m "chore: update dependencies"'
+  #     - name: Push changes
+  #       run: git push origin main

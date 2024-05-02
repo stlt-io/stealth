@@ -1,4 +1,4 @@
-import hash from './hash.js'
+import hash from '../utils/hash'
 
 const audio = () => {
   return new Promise((resolve) => {

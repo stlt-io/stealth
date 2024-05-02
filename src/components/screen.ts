@@ -16,7 +16,7 @@ const screenDetails = () => {
 }
 
 const matchMedias = () => {
-  let results = []
+  let results: any[] = []
 
   const mediaQueries = {
     'prefers-contrast': [
@@ -40,7 +40,7 @@ const matchMedias = () => {
   }
 
   Object.keys(mediaQueries).forEach((key) => {
-    mediaQueries[key].forEach((value) => {
+    mediaQueries[key].forEach((value: any) => {
       if (matchMedia(`(${key}: ${value})`).matches)
         results.push(`${key}: ${value}`)
     })

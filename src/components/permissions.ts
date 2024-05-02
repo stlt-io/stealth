@@ -27,7 +27,7 @@ const permissions = async () => {
       ])
         .then((permissions) => {
           resolve({
-            permissions: permissions.reduce((acc, perm) => {
+            permissions: permissions.reduce((acc: any, perm: any) => {
               const { state, name } = perm || {}
               if (acc[state]) {
                 acc[state].push(name)
@@ -45,7 +45,7 @@ const permissions = async () => {
   })
 }
 
-const getPermissionState = (name) =>
+const getPermissionState = (name: any) =>
   navigator.permissions
     .query({ name })
     .then((res) => ({ name, state: res.state }))

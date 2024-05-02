@@ -1,4 +1,32 @@
-import hash from './hash.js'
+import hash from '../utils/hash'
+
+const fonts = async () => {
+  return new Promise(async (resolve) => {
+    try {
+      const results = await Promise.all(
+        fontList.map(async (font) => {
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+          ctx.font = `16px ${font}`
+
+          return document.fonts.ready.then(() => {
+            return ctx.measureText('😀☺♨...☑✴🅰').width
+          })
+        })
+      )
+
+      const unique = [...new Set(results)]
+      resolve({
+        fonts: {
+          unique: unique.length,
+          hash: hash(unique.join('|'))
+        }
+      })
+    } catch (error) {
+      resolve({ fonts: null })
+    }
+  })
+}
 
 const fontList = [
   'mono',
@@ -3566,33 +3594,5 @@ const fontList = [
   'ＭＳ Ｐゴシック',
   'ＭＳ Ｐ明朝'
 ]
-
-const fonts = async () => {
-  return new Promise(async (resolve) => {
-    try {
-      const results = await Promise.all(
-        fontList.map(async (font) => {
-          const canvas = document.createElement('canvas')
-          const ctx = canvas.getContext('2d')
-          ctx.font = `16px ${font}`
-
-          return document.fonts.ready.then(() => {
-            return ctx.measureText('😀☺♨...☑✴🅰').width
-          })
-        })
-      )
-
-      const unique = [...new Set(results)]
-      resolve({
-        fonts: {
-          unique: unique.length,
-          hash: hash(unique.join('|'))
-        }
-      })
-    } catch (error) {
-      resolve({ fonts: null })
-    }
-  })
-}
 
 export default fonts

@@ -27,7 +27,7 @@ const math = () => {
   })
 }
 
-const integrate = (fn, a, b, n) => {
+const integrate = (fn: Function, a: number, b: number, n: number) => {
   let sum = 0
   const h = (b - a) / n
   for (let i = 0; i < n; i++) {

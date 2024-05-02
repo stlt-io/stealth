@@ -1,22 +1,24 @@
 import axios from 'axios'
 import jsSHA from 'jssha'
 
-import canvas from './src/canvas.js'
-import device from './src/device.js'
-import permissions from './src/permissions.js'
-import screen from './src/screen.js'
-import browser from './src/browser.js'
-import intl from './src/intl.js'
-import audio from './src/audio.js'
-import webgl from './src/webgl.js'
-import math from './src/math.js'
-import fonts from './src/fonts.js'
-import storage from './src/storage.js'
-import devices from './src/devices.js'
-import webrtc from './src/webrtc.js'
+import canvas from './components/canvas'
+import device from './components/device'
+import permissions from './components/permissions'
+import screen from './components/screen'
+import browser from './components/browser'
+import intl from './components/intl'
+import audio from './components/audio'
+import webgl from './components/webgl'
+import math from './components/math'
+import fonts from './components/fonts'
+import storage from './components/storage'
+import devices from './components/devices'
+import webrtc from './components/webrtc'
 
-export default async function stealth({ apiKey }) {
-  let start = window.performance.now()
+import config from './config'
+
+export default async function stealth({ apiKey }: { apiKey?: string }) {
+  const start = window.performance.now() as number
   return Promise.all([
     audio(),
     browser(),
@@ -32,12 +34,12 @@ export default async function stealth({ apiKey }) {
     webgl(),
     webrtc()
   ]).then((data) => {
-    const local = data.reduce((acc, cur) => {
+    const local = data.reduce((acc: any, cur: any) => {
       Object.keys(cur).forEach((key) => {
         acc[key] = cur[key]
       })
       return acc
-    }, {})
+    }, {}) as any
 
     const payload = {
       local: {
@@ -55,12 +57,12 @@ export default async function stealth({ apiKey }) {
       axiosInstance.defaults.withCredentials = true
       axiosInstance.defaults.headers.common['x-api-key'] = apiKey
       return axiosInstance
-        .get(`https://api.stlt.io/${payload.local.hash}`)
+        .get(`${config.apiBaseUrl}/${payload.local.hash}`)
         .then((response) => {
           return {
             visitorId: response.data.visitorId,
             local: payload.local,
-            ms: parseInt(window.performance.now() - start),
+            ms: Math.round(window.performance.now() - start),
             remote: response.data
           }
         })
@@ -69,7 +71,7 @@ export default async function stealth({ apiKey }) {
           return {
             visitorId: payload.local.hash,
             local: payload.local,
-            ms: parseInt(window.performance.now() - start),
+            ms: Math.round(window.performance.now() - start),
             remote: {}
           }
         })
@@ -77,7 +79,7 @@ export default async function stealth({ apiKey }) {
       return {
         visitorId: payload.local.hash,
         local: payload.local,
-        ms: parseInt(window.performance.now() - start),
+        ms: Math.round(window.performance.now() - start),
         remote: {}
       }
     }

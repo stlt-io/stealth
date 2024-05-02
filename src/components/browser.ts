@@ -6,7 +6,6 @@ const browser = () => {
           userAgent: navigator.userAgent,
           cookieEnabled: navigator.cookieEnabled,
           onLine: navigator.onLine,
-          oscpu: navigator.oscpu,
           userAgentData: navigator.userAgentData,
           webdriver: navigator.webdriver,
           doNotTrack: navigator.doNotTrack,

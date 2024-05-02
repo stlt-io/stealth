@@ -6,6 +6,8 @@ const screenDetails = () => {
           isTouchscreen: navigator.maxTouchPoints > 0,
           maxTouchPoints: navigator.maxTouchPoints,
           colorDepth: screen.colorDepth,
+          width: screen.width,
+          height: screen.height,
           mediaMatches: matchMedias()
         }
       })

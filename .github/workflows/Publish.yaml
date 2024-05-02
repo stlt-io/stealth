@@ -26,7 +26,7 @@ jobs:
       - name: Set NPM version
         run: npm version ${{ steps.tag.outputs.tag }}
       - name: Set config
-        run: cp src/config.prod.ts src/config.ts
+        run: cp src/config/config.prod.ts src/config.ts
       - name: Build
         run: npm run build
       - name: Publish

@@ -7,7 +7,7 @@ const fonts = async () => {
         fontList.map(async (font) => {
           const canvas = document.createElement('canvas')
           const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-          ctx.font = `16px ${font}`
+          ctx.font = `16px ${font}, sans-serif`
 
           return document.fonts.ready.then(() => {
             return ctx.measureText('😀☺♨...☑✴🅰').width

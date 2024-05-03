@@ -17,7 +17,13 @@ import webrtc from './components/webrtc'
 
 import config from './config'
 
-export default async function stealth({ apiKey }: { apiKey?: string }) {
+export default async function stealth({
+  apiKey,
+  debug
+}: {
+  apiKey?: string
+  debug?: boolean
+}) {
   const start = window.performance.now() as number
   return Promise.all([
     audio(),
@@ -48,6 +54,11 @@ export default async function stealth({ apiKey }: { apiKey?: string }) {
           .update(JSON.stringify(local))
           .getHash('HEX')
       }
+    }
+
+    if (debug) {
+      console.log(payload.local.hash)
+      console.log(payload.local)
     }
 
     // If apiKey is provided, send the payload to the server (more accurate results)

@@ -3,23 +3,42 @@ import hash from '../utils/hash'
 const fonts = async () => {
   return new Promise(async (resolve) => {
     try {
-      const results = await Promise.all(
-        fontList.map(async (font) => {
-          const canvas = document.createElement('canvas')
-          const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-          ctx.font = `16px ${font}, sans-serif`
+      const iframe = document.createElement('iframe')
+      iframe.style.display = 'none'
+      document.body.appendChild(iframe)
 
-          return document.fonts.ready.then(() => {
-            return ctx.measureText('😀☺♨...☑✴🅰').width
+      const results = await Promise.all(
+        fontList.map((font) => {
+          return new Promise(async (resolve) => {
+            const canvas = iframe.contentDocument!.createElement('canvas')
+            const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+
+            try {
+              const fontReady = iframe.contentDocument!.fonts.check(
+                `128px ${font}`
+              )
+
+              if (fontReady) {
+                ctx.font = `128px ${font}`
+                resolve(ctx.measureText('😀☺♨...☑✴🅰').width)
+              } else {
+                resolve(0)
+              }
+            } catch {
+              resolve(0)
+            }
           })
         })
       )
 
+      document.body.removeChild(iframe)
       const unique = [...new Set(results)]
+
       resolve({
         fonts: {
           unique: unique.length,
-          hash: hash(unique.join('|'))
+          hash: hash(unique.sort().join('|')),
+          list: unique.sort()
         }
       })
     } catch (error) {
@@ -3572,27 +3591,7 @@ const fontList = [
   'Zilla Slab Highlight',
   'Zurich BlkEx BT',
   'Zurich Ex BT',
-  'ZWAdobeF',
-  'מרים',
-  'মিত্র',
-  'মুক্তি',
-  'মুক্তি পাতনা',
-  'गार्गी',
-  'नालिमाटी',
-  'অনি Dvf',
-  '宋体',
-  '微软雅黑',
-  '游ゴシック',
-  '細明體',
-  '細明體_HKSCS',
-  '新細明體',
-  '굴림',
-  '굴림체',
-  '바탕',
-  'ＭＳ ゴシック',
-  'ＭＳ 明朝',
-  'ＭＳ Ｐゴシック',
-  'ＭＳ Ｐ明朝'
+  'ZWAdobeF'
 ]
 
 export default fonts

@@ -14,6 +14,7 @@ import fonts from './components/fonts'
 import storage from './components/storage'
 import devices from './components/devices'
 import webrtc from './components/webrtc'
+import gpu from './components/gpu'
 
 import config from './config'
 
@@ -32,6 +33,7 @@ export default async function stealth({
     device(),
     devices(),
     fonts(),
+    gpu(),
     intl(),
     math(),
     permissions(),

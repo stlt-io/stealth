@@ -31,6 +31,10 @@ export default async function stealth(
 ) {
   const start = window.performance.now() as number
 
+  if (!ignore) {
+    ignore = []
+  }
+
   const p = []
   if (!ignore.includes('audio')) p.push(audio())
   if (!ignore.includes('browser')) p.push(browser())

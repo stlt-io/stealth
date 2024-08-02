@@ -18,30 +18,36 @@ import gpu from './components/gpu'
 
 import config from './config'
 
-export default async function stealth({
-  apiKey,
-  debug
-}: {
-  apiKey?: string
-  debug?: boolean
-}) {
+export default async function stealth(
+  {
+    apiKey,
+    debug,
+    ignore
+  }: {
+    apiKey?: string
+    debug?: boolean
+    ignore: string[]
+  } = { ignore: [] }
+) {
   const start = window.performance.now() as number
-  return Promise.all([
-    audio(),
-    browser(),
-    canvas(),
-    device(),
-    devices(),
-    fonts(),
-    gpu(),
-    intl(),
-    math(),
-    permissions(),
-    screen(),
-    storage(),
-    webgl(),
-    webrtc()
-  ]).then((data) => {
+
+  const p = []
+  if (!ignore.includes('audio')) p.push(audio())
+  if (!ignore.includes('browser')) p.push(browser())
+  if (!ignore.includes('canvas')) p.push(canvas())
+  if (!ignore.includes('device')) p.push(device())
+  if (!ignore.includes('devices')) p.push(devices())
+  if (!ignore.includes('fonts')) p.push(fonts())
+  if (!ignore.includes('gpu')) p.push(gpu())
+  if (!ignore.includes('intl')) p.push(intl())
+  if (!ignore.includes('math')) p.push(math())
+  if (!ignore.includes('permissions')) p.push(permissions())
+  if (!ignore.includes('screen')) p.push(screen())
+  if (!ignore.includes('storage')) p.push(storage())
+  if (!ignore.includes('webgl')) p.push(webgl())
+  if (!ignore.includes('webrtc')) p.push(webrtc())
+
+  return Promise.all(p).then((data) => {
     const local = data.reduce((acc: any, cur: any) => {
       Object.keys(cur).forEach((key) => {
         acc[key] = cur[key]
@@ -72,6 +78,9 @@ export default async function stealth({
       return axiosInstance
         .get(`${config.apiBaseUrl}/${payload.local.hash}`)
         .then((response) => {
+          if (debug) {
+            console.log(response.data)
+          }
           return {
             visitorId: response.data.visitorId,
             local: payload.local,

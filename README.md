@@ -1,8 +1,6 @@
 # Stlt - Stealth
 
-Device fingerprinting
-
-(work in progress)
+Device fingerprinting and browser information.
 
 See the working [demo](https://stlt.io) in action.
 
@@ -52,4 +50,40 @@ const {
   ms: 491
 } = result
 
+```
+
+## Ignore list
+
+You can exclude some tests by providing an array of keys to ignore.
+
+### Example with ignore list
+
+```
+import stealth from '@stltio/stealth'
+const result = await stealth({ ignore: ['audio', 'webrtc']})
+const {
+  local: {},
+  remote: {},
+  visitorId: 'abc...xyz',
+  ms: 491
+} = result
+```
+
+## Debug
+
+You can enable debug mode by setting `debug` to `true`.
+
+It will print in the console the lolcal generated payload and the remote response.
+
+### Example with debug
+
+```
+import stealth from '@stltio/stealth'
+const result = await stealth({ debug: true })
+const {
+  local: {},
+  remote: {},
+  visitorId: 'abc...xyz',
+  ms: 491
+} = result
 ```

@@ -14,9 +14,11 @@ const storage = () => {
         }),
         new Promise((resolve) => {
           try {
-            navigator.webkitTemporaryStorage.queryUsageAndQuota((_, quota) => {
-              resolve(quota)
-            })
+            navigator.webkitTemporaryStorage.queryUsageAndQuota(
+              (_: any, quota: any) => {
+                resolve(quota)
+              }
+            )
           } catch {
             resolve(null)
           }

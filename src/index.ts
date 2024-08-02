@@ -18,17 +18,15 @@ import gpu from './components/gpu'
 
 import config from './config'
 
-export default async function stealth(
-  {
-    apiKey,
-    debug,
-    ignore
-  }: {
-    apiKey?: string
-    debug?: boolean
-    ignore: string[]
-  } = { ignore: [] }
-) {
+export default async function stealth({
+  apiKey,
+  debug,
+  ignore
+}: {
+  apiKey?: string
+  debug?: boolean
+  ignore?: string[]
+} = {}) {
   const start = window.performance.now() as number
 
   if (!ignore) {

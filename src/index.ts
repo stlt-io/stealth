@@ -49,63 +49,73 @@ export default async function stealth({
   if (!ignore.includes('webgl')) p.push(webgl())
   if (!ignore.includes('webrtc')) p.push(webrtc())
 
-  return Promise.all(p).then((data) => {
-    const local = data.reduce((acc: any, cur: any) => {
-      Object.keys(cur).forEach((key) => {
-        acc[key] = cur[key]
+  let data: any = {}
+  for (let i = 0; i < p.length; i++) {
+    try {
+      const d: any = await p[i]
+      data = { ...data, ...d }
+    } catch (e) {
+      if (debug) {
+        console.error(e)
+      }
+    }
+  }
+
+  const local = data.reduce((acc: any, cur: any) => {
+    Object.keys(cur).forEach((key) => {
+      acc[key] = cur[key]
+    })
+    return acc
+  }, {}) as any
+
+  const payload = {
+    local: {
+      ...local,
+      hash: new jsSHA('SHA-256', 'TEXT', { encoding: 'UTF8' })
+        .update(JSON.stringify(local))
+        .getHash('HEX')
+    }
+  }
+
+  if (debug) {
+    console.log(payload.local.hash)
+    console.log(payload.local)
+  }
+
+  // If apiKey is provided, send the payload to the server (more accurate results)
+  // Want an API_KEY? Contact us at hello@stlt.io
+  if (apiKey) {
+    const axiosInstance = axios.create()
+    axiosInstance.defaults.withCredentials = true
+    axiosInstance.defaults.headers.common['x-api-key'] = apiKey
+    return axiosInstance
+      .get(`${config.apiBaseUrl}/${payload.local.hash}`)
+      .then((response) => {
+        if (debug) {
+          console.log(response.data)
+        }
+        return {
+          visitorId: response.data.visitorId,
+          local: payload.local,
+          ms: Math.round(window.performance.now() - start),
+          remote: response.data
+        }
       })
-      return acc
-    }, {}) as any
-
-    const payload = {
-      local: {
-        ...local,
-        hash: new jsSHA('SHA-256', 'TEXT', { encoding: 'UTF8' })
-          .update(JSON.stringify(local))
-          .getHash('HEX')
-      }
+      .catch((error) => {
+        console.log(error.message)
+        return {
+          visitorId: payload.local.hash,
+          local: payload.local,
+          ms: Math.round(window.performance.now() - start),
+          remote: {}
+        }
+      })
+  } else {
+    return {
+      visitorId: payload.local.hash,
+      local: payload.local,
+      ms: Math.round(window.performance.now() - start),
+      remote: {}
     }
-
-    if (debug) {
-      console.log(payload.local.hash)
-      console.log(payload.local)
-    }
-
-    // If apiKey is provided, send the payload to the server (more accurate results)
-    // Want an API_KEY? Contact us at hello@stlt.io
-    if (apiKey) {
-      const axiosInstance = axios.create()
-      axiosInstance.defaults.withCredentials = true
-      axiosInstance.defaults.headers.common['x-api-key'] = apiKey
-      return axiosInstance
-        .get(`${config.apiBaseUrl}/${payload.local.hash}`)
-        .then((response) => {
-          if (debug) {
-            console.log(response.data)
-          }
-          return {
-            visitorId: response.data.visitorId,
-            local: payload.local,
-            ms: Math.round(window.performance.now() - start),
-            remote: response.data
-          }
-        })
-        .catch((error) => {
-          console.log(error.message)
-          return {
-            visitorId: payload.local.hash,
-            local: payload.local,
-            ms: Math.round(window.performance.now() - start),
-            remote: {}
-          }
-        })
-    } else {
-      return {
-        visitorId: payload.local.hash,
-        local: payload.local,
-        ms: Math.round(window.performance.now() - start),
-        remote: {}
-      }
-    }
-  })
+  }
 }

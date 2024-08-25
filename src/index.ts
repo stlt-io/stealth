@@ -49,11 +49,11 @@ export default async function stealth({
   if (!ignore.includes('webgl')) p.push(webgl())
   if (!ignore.includes('webrtc')) p.push(webrtc())
 
-  let data: any = {}
+  let data: any = []
   for (let i = 0; i < p.length; i++) {
     try {
       const d: any = await p[i]
-      data = { ...data, ...d }
+      data.push(d)
     } catch (e) {
       if (debug) {
         console.error(e)

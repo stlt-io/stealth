@@ -50,9 +50,10 @@ export default async function stealth({
   if (!ignore.includes('webrtc')) p.push(webrtc())
 
   let data: any = []
-  for (let i = 0; i < p.length; i++) {
+
+  for await (const f of p) {
     try {
-      const d: any = await p[i]
+      const d: any = await f
       data.push(d)
     } catch (e) {
       if (debug) {
@@ -90,7 +91,7 @@ export default async function stealth({
     axiosInstance.defaults.headers.common['x-api-key'] = apiKey
     return axiosInstance
       .get(`${config.apiBaseUrl}/${payload.local.hash}`)
-      .then((response) => {
+      .then((response: any) => {
         if (debug) {
           console.log(response.data)
         }
@@ -101,7 +102,7 @@ export default async function stealth({
           remote: response.data
         }
       })
-      .catch((error) => {
+      .catch((error: Error) => {
         console.log(error.message)
         return {
           visitorId: payload.local.hash,

@@ -1,5 +1,12 @@
 const webrtc = () => {
   return new Promise(async (resolve) => {
+    let settled = false
+    const done = (payload: any) => {
+      if (settled) return
+      settled = true
+      resolve(payload)
+    }
+
     try {
       const capabilities: any = await getCapabilities()
 
@@ -22,28 +29,29 @@ const webrtc = () => {
         pc.setLocalDescription(offer)
       })
 
-      pc.onicecandidate = async (event) => {
-        if (event.candidate) {
-          const { candidate } = event.candidate || {}
-          if (!candidate) {
-            return
-          }
-          const { sdp } = pc.localDescription || {}
+      const timeout = setTimeout(() => {
+        const { sdp } = pc.localDescription || {}
+        try {
           pc.close()
+        } catch {}
+        const extensions = getExtensions(sdp || '')
+        done({ webrtc: { capabilities, extensions, audio, video } })
+      }, 500)
 
-          const extensions = getExtensions(sdp || '')
-
-          // const regex = /udp\s+(\d+)/
-          // const match = regex.exec(candidate)
-          // const udp = match ? match[1] : null
-
-          resolve({
-            webrtc: { capabilities, extensions, audio, video }
-          })
-        }
+      pc.onicecandidate = (event) => {
+        if (!event.candidate) return
+        const { candidate } = event.candidate
+        if (!candidate) return
+        const { sdp } = pc.localDescription || {}
+        clearTimeout(timeout)
+        try {
+          pc.close()
+        } catch {}
+        const extensions = getExtensions(sdp || '')
+        done({ webrtc: { capabilities, extensions, audio, video } })
       }
     } catch (err) {
-      resolve({ webrtc: null })
+      done({ webrtc: null })
     }
   })
 }

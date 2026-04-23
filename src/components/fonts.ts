@@ -1,50 +1,47 @@
 import hash from '../utils/hash'
 
 const fonts = async () => {
-  return new Promise(async (resolve) => {
-    try {
-      const iframe = document.createElement('iframe')
-      iframe.style.display = 'none'
-      document.body.appendChild(iframe)
+  try {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    if (!ctx) return { fonts: null }
 
-      const results = await Promise.all(
-        fontList.map((font) => {
-          return new Promise(async (resolve) => {
-            const canvas = iframe.contentDocument!.createElement('canvas')
-            const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    const testString = 'mmmmmmmmmmlli'
+    const size = '72px'
+    const baselines = ['monospace', 'sans-serif', 'serif']
 
-            try {
-              const fontReady = iframe.contentDocument!.fonts.check(
-                `128px ${font}`
-              )
-
-              if (fontReady) {
-                ctx.font = `128px ${font}`
-                resolve(ctx.measureText('😀☺♨...☑✴🅰').width)
-              } else {
-                resolve(0)
-              }
-            } catch {
-              resolve(0)
-            }
-          })
-        })
-      )
-
-      document.body.removeChild(iframe)
-      const unique = [...new Set(results)]
-
-      resolve({
-        fonts: {
-          unique: unique.length,
-          hash: hash(unique.sort().join('|')),
-          list: unique.sort()
-        }
-      })
-    } catch (error) {
-      resolve({ fonts: null })
+    const baselineWidths: Record<string, number> = {}
+    for (const b of baselines) {
+      ctx.font = `${size} ${b}`
+      baselineWidths[b] = ctx.measureText(testString).width
     }
-  })
+
+    const detected: string[] = []
+    for (let i = 0; i < fontList.length; i++) {
+      const font = fontList[i]
+      let found = false
+      for (let j = 0; j < baselines.length; j++) {
+        const b = baselines[j]
+        ctx.font = `${size} "${font}",${b}`
+        if (ctx.measureText(testString).width !== baselineWidths[b]) {
+          found = true
+          break
+        }
+      }
+      if (found) detected.push(font)
+    }
+
+    detected.sort()
+    return {
+      fonts: {
+        unique: detected.length,
+        hash: hash(detected.join('|')),
+        list: detected
+      }
+    }
+  } catch {
+    return { fonts: null }
+  }
 }
 
 const fontList = [

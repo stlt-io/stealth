@@ -1,6 +1,3 @@
-import axios from 'axios'
-import jsSHA from 'jssha'
-
 import canvas from './components/canvas'
 import device from './components/device'
 import permissions from './components/permissions'
@@ -16,107 +13,124 @@ import devices from './components/devices'
 import webrtc from './components/webrtc'
 import gpu from './components/gpu'
 
+import { sha256 } from './utils/hash'
 import config from './config'
+
+const CACHE_KEY = 'stlt_stealth_v1'
+
+type Options = {
+  apiKey?: string
+  debug?: boolean
+  ignore?: string[]
+  cache?: boolean
+}
+
+type Result = {
+  visitorId: string
+  local: Record<string, any>
+  remote: Record<string, any>
+  ms: number
+}
+
+const componentMap: Record<string, () => Promise<any>> = {
+  audio,
+  browser,
+  canvas,
+  device,
+  devices,
+  fonts,
+  gpu,
+  intl,
+  math,
+  permissions,
+  screen,
+  storage,
+  webgl,
+  webrtc
+}
 
 export default async function stealth({
   apiKey,
   debug,
-  ignore
-}: {
-  apiKey?: string
-  debug?: boolean
-  ignore?: string[]
-} = {}) {
-  const start = window.performance.now() as number
+  ignore = [],
+  cache = true
+}: Options = {}): Promise<Result> {
+  const start = window.performance.now()
 
-  if (!ignore) {
-    ignore = []
-  }
-
-  const p = []
-  if (!ignore.includes('audio')) p.push(audio())
-  if (!ignore.includes('browser')) p.push(browser())
-  if (!ignore.includes('canvas')) p.push(canvas())
-  if (!ignore.includes('device')) p.push(device())
-  if (!ignore.includes('devices')) p.push(devices())
-  if (!ignore.includes('fonts')) p.push(fonts())
-  if (!ignore.includes('gpu')) p.push(gpu())
-  if (!ignore.includes('intl')) p.push(intl())
-  if (!ignore.includes('math')) p.push(math())
-  if (!ignore.includes('permissions')) p.push(permissions())
-  if (!ignore.includes('screen')) p.push(screen())
-  if (!ignore.includes('storage')) p.push(storage())
-  if (!ignore.includes('webgl')) p.push(webgl())
-  if (!ignore.includes('webrtc')) p.push(webrtc())
-
-  let data: any = []
-
-  for await (const f of p) {
+  if (cache) {
     try {
-      const d: any = await f
-      data.push(d)
-    } catch (e) {
-      if (debug) {
-        console.error(e)
+      const cached = sessionStorage.getItem(CACHE_KEY)
+      if (cached) {
+        const parsed = JSON.parse(cached) as Result
+        return { ...parsed, ms: Math.round(window.performance.now() - start) }
       }
+    } catch {}
+  }
+
+  const skip = new Set(ignore)
+  const tasks: Promise<any>[] = []
+  for (const key of Object.keys(componentMap)) {
+    if (!skip.has(key)) tasks.push(componentMap[key]())
+  }
+
+  const settled = await Promise.allSettled(tasks)
+  const local: Record<string, any> = {}
+  for (const r of settled) {
+    if (r.status === 'fulfilled' && r.value) {
+      Object.assign(local, r.value)
+    } else if (r.status === 'rejected' && debug) {
+      console.error(r.reason)
     }
   }
 
-  const local = data.reduce((acc: any, cur: any) => {
-    Object.keys(cur).forEach((key) => {
-      acc[key] = cur[key]
-    })
-    return acc
-  }, {}) as any
-
-  const payload = {
-    local: {
-      ...local,
-      hash: new jsSHA('SHA-256', 'TEXT', { encoding: 'UTF8' })
-        .update(JSON.stringify(local))
-        .getHash('HEX')
-    }
-  }
+  const hash = await sha256(JSON.stringify(local))
+  const payload = { local: { ...local, hash } }
 
   if (debug) {
     console.log(payload.local.hash)
     console.log(payload.local)
   }
 
-  // If apiKey is provided, send the payload to the server (more accurate results)
-  // Want an API_KEY? Contact us at hello@stlt.io
+  let result: Result
+
   if (apiKey) {
-    const axiosInstance = axios.create()
-    axiosInstance.defaults.withCredentials = true
-    axiosInstance.defaults.headers.common['x-api-key'] = apiKey
-    return axiosInstance
-      .get(`${config.apiBaseUrl}/${payload.local.hash}`)
-      .then((response: any) => {
-        if (debug) {
-          console.log(response.data)
-        }
-        return {
-          visitorId: response.data.visitorId,
-          local: payload.local,
-          ms: Math.round(window.performance.now() - start),
-          remote: response.data
-        }
+    try {
+      const res = await fetch(`${config.apiBaseUrl}/${payload.local.hash}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'x-api-key': apiKey }
       })
-      .catch((error: Error) => {
-        console.log(error.message)
-        return {
-          visitorId: payload.local.hash,
-          local: payload.local,
-          ms: Math.round(window.performance.now() - start),
-          remote: {}
-        }
-      })
+      const data = await res.json()
+      if (debug) console.log(data)
+      result = {
+        visitorId: data.visitorId,
+        local: payload.local,
+        ms: Math.round(window.performance.now() - start),
+        remote: data
+      }
+    } catch (error: any) {
+      if (debug) console.log(error?.message)
+      result = {
+        visitorId: payload.local.hash,
+        local: payload.local,
+        ms: Math.round(window.performance.now() - start),
+        remote: {}
+      }
+    }
   } else {
-    return {
+    result = {
       visitorId: payload.local.hash,
       local: payload.local,
       ms: Math.round(window.performance.now() - start),
       remote: {}
     }
   }
+
+  if (cache) {
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(result))
+    } catch {}
+  }
+
+  return result
 }

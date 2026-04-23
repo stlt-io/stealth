@@ -4,9 +4,11 @@ const audio = () => {
   return new Promise((resolve) => {
     try {
       const sampleRate = 44100
-      const numSamples = 5000
-      const audioContext = new (window.OfflineAudioContext ||
-        window.webkitOfflineAudioContext)(1, numSamples, sampleRate)
+      const numSamples = 1000
+      const Ctx =
+        window.OfflineAudioContext ||
+        (window as any).webkitOfflineAudioContext
+      const audioContext = new Ctx(1, numSamples, sampleRate)
       const audioBuffer = audioContext.createBufferSource()
 
       const oscillator = audioContext.createOscillator()
@@ -20,13 +22,14 @@ const audio = () => {
       oscillator.connect(compressor)
       compressor.connect(audioContext.destination)
       oscillator.start()
-      let samples
 
-      audioContext.oncomplete = (event) => {
-        samples = event.renderedBuffer.getChannelData(0)
+      audioContext.oncomplete = (event: OfflineAudioCompletionEvent) => {
+        const samples = event.renderedBuffer.getChannelData(0)
+        let sum = 0
+        for (let i = 0; i < samples.length; i++) sum += Math.abs(samples[i])
         resolve({
           audio: {
-            sampleHash: hash(samples.join(',')),
+            sampleHash: hash(sum.toString()),
             oscillator: oscillator.type,
             maxChannels: audioContext.destination.maxChannelCount,
             channelCountMode: audioBuffer.channelCountMode

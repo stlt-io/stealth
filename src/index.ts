@@ -12,8 +12,12 @@ import storage from './components/storage'
 import devices from './components/devices'
 import webrtc from './components/webrtc'
 import gpu from './components/gpu'
+import emoji from './components/emoji'
+import voices from './components/voices'
+import codecs from './components/codecs'
+import incognito from './components/incognito'
 
-import { sha256 } from './utils/hash'
+import { sha256Short } from './utils/hash'
 import config from './config'
 
 const CACHE_KEY = 'stlt_stealth_v1'
@@ -23,6 +27,12 @@ export type Options = {
   debug?: boolean
   ignore?: string[]
   cache?: boolean
+  short?: boolean
+}
+
+export type Incognito = {
+  engine: 'chromium' | 'firefox' | 'safari' | 'unknown'
+  isPrivate: boolean | null
 }
 
 export type Result = {
@@ -30,6 +40,7 @@ export type Result = {
   local: Record<string, any>
   remote: Record<string, any>
   ms: number
+  incognito: Incognito | null
 }
 
 const componentMap: Record<string, () => Promise<any>> = {
@@ -46,23 +57,36 @@ const componentMap: Record<string, () => Promise<any>> = {
   screen,
   storage,
   webgl,
-  webrtc
+  webrtc,
+  emoji,
+  voices,
+  codecs,
+  incognito
 }
 
 export default async function stealth({
   apiKey,
   debug,
   ignore = [],
-  cache = true
+  cache = true,
+  short = false
 }: Options = {}): Promise<Result> {
   const start = window.performance.now()
 
-  if (cache) {
+  if (cache && !debug) {
     try {
       const cached = sessionStorage.getItem(CACHE_KEY)
       if (cached) {
         const parsed = JSON.parse(cached) as Result
         return { ...parsed, ms: Math.round(window.performance.now() - start) }
+      }
+    } catch {}
+  }
+
+  if (debug) {
+    try {
+      if (sessionStorage.getItem(CACHE_KEY)) {
+        console.log('[stealth] cache present (bypassed by debug)')
       }
     } catch {}
   }
@@ -96,8 +120,11 @@ export default async function stealth({
     }
   }
 
-  const hash = await sha256(JSON.stringify(local))
-  const payload = { local: { ...local, hash } }
+  const { incognito: incognitoData, ...hashable } = local
+  const serialized = JSON.stringify(hashable)
+  const hash = await sha256Short(serialized, short ? 16 : 20)
+  const payload = { local: { ...hashable, hash } }
+  const incognitoOut = (incognitoData as Incognito | null | undefined) ?? null
 
   if (debug) {
     console.log(payload.local.hash)
@@ -119,7 +146,8 @@ export default async function stealth({
         visitorId: data.visitorId,
         local: payload.local,
         ms: Math.round(window.performance.now() - start),
-        remote: data
+        remote: data,
+        incognito: incognitoOut
       }
     } catch (error: any) {
       if (debug) console.log(error?.message)
@@ -127,7 +155,8 @@ export default async function stealth({
         visitorId: payload.local.hash,
         local: payload.local,
         ms: Math.round(window.performance.now() - start),
-        remote: {}
+        remote: {},
+        incognito: incognitoOut
       }
     }
   } else {
@@ -135,7 +164,8 @@ export default async function stealth({
       visitorId: payload.local.hash,
       local: payload.local,
       ms: Math.round(window.performance.now() - start),
-      remote: {}
+      remote: {},
+      incognito: incognitoOut
     }
   }
 

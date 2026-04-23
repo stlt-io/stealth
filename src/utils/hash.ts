@@ -27,3 +27,32 @@ export const sha256 = async (input: string): Promise<string> => {
   }
   return hex
 }
+
+const BASE62 =
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+
+const bytesToBase62 = (bytes: Uint8Array): string => {
+  let num = 0n
+  for (let i = 0; i < bytes.length; i++) {
+    num = (num << 8n) | BigInt(bytes[i])
+  }
+  if (num === 0n) return '0'
+  let out = ''
+  const base = 62n
+  while (num > 0n) {
+    const r = Number(num % base)
+    out = BASE62[r] + out
+    num = num / base
+  }
+  return out
+}
+
+export const sha256Short = async (
+  input: string,
+  length = 20
+): Promise<string> => {
+  const buf = new TextEncoder().encode(input)
+  const digest = await crypto.subtle.digest('SHA-256', buf)
+  const encoded = bytesToBase62(new Uint8Array(digest))
+  return encoded.slice(0, length)
+}

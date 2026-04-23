@@ -2,6 +2,10 @@ import hash from '../utils/hash'
 
 const fonts = async () => {
   try {
+    if (document.fonts && document.fonts.ready) {
+      await document.fonts.ready
+    }
+
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     if (!ctx) return { fonts: null }

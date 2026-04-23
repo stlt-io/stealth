@@ -18,14 +18,14 @@ import config from './config'
 
 const CACHE_KEY = 'stlt_stealth_v1'
 
-type Options = {
+export type Options = {
   apiKey?: string
   debug?: boolean
   ignore?: string[]
   cache?: boolean
 }
 
-type Result = {
+export type Result = {
   visitorId: string
   local: Record<string, any>
   remote: Record<string, any>
@@ -68,9 +68,22 @@ export default async function stealth({
   }
 
   const skip = new Set(ignore)
+  const names: string[] = []
   const tasks: Promise<any>[] = []
   for (const key of Object.keys(componentMap)) {
-    if (!skip.has(key)) tasks.push(componentMap[key]())
+    if (skip.has(key)) continue
+    names.push(key)
+    if (debug) {
+      const t0 = window.performance.now()
+      tasks.push(
+        componentMap[key]().then((v) => {
+          console.log(`[stealth] ${key}: ${Math.round(window.performance.now() - t0)}ms`)
+          return v
+        })
+      )
+    } else {
+      tasks.push(componentMap[key]())
+    }
   }
 
   const settled = await Promise.allSettled(tasks)

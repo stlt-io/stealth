@@ -36,7 +36,7 @@ const webrtc = () => {
         } catch {}
         const extensions = getExtensions(sdp || '')
         done({ webrtc: { capabilities, extensions, audio, video } })
-      }, 500)
+      }, 200)
 
       pc.onicecandidate = (event) => {
         if (!event.candidate) return
